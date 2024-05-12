@@ -2,14 +2,9 @@ from flask import Flask, render_template, request
 import sys
 from chatbot import Chatbot
 from common import model
-from characters import system_role, instruction
 
 # jjinchin 인스턴스 생성
-jjinchin = Chatbot(
-    model=model.basic,
-    system_role=system_role,
-    instruction=instruction
-)
+jjinchin = Chatbot(model.basic)
 
 application = Flask(__name__)
 
@@ -35,13 +30,11 @@ def chat_app():
 def chat_api():
     request_message = request.json['request_message']
     print("request_message:", request_message)
-
+    
     jjinchin.add_user_message(request_message)
     response = jjinchin.send_request()
     jjinchin.add_response(response)
     response_message = jjinchin.get_response_content()
-    jjinchin.handle_token_limit(response)
-    jjinchin.clean_instruction()
     print("response_message:", response_message)
 
     return {"response_message": response_message}

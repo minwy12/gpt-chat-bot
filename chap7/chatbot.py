@@ -1,34 +1,19 @@
 from common import client, model
 from pprint import pprint
-import math
 
 class Chatbot:
-    def __init__(self, model, system_role, instruction):
-        self.context = [{"role": "system", "content": system_role}]
+    def __init__(self, model):
+        self.context = [{"role": "system", "content": "You are a master of NBA history."}]
         self.model = model
-        self.instruction = instruction
-        self.max_token_size = 16*1024
-        self.available_token_rate = 0.9
 
     def add_user_message(self, message):
         self.context.append({"role": "user", "content": message})
 
     def send_request(self):
-        try:
-            self.context[-1]['content'] += self.instruction
-
-            response = client.chat.completions.create(
-                model=self.model, 
-                messages=self.context,
-                temperature=0.5,
-                top_p=1,
-                max_tokens=256,
-                frequency_penalty=0,
-                presence_penalty=0,
-            ).model_dump()
-        except Exception as e:
-            print(f"Exception 오류({type(e)}) 발생: {e}")
-
+        response = client.chat.completions.create(
+            model=self.model, 
+            messages=self.context
+        ).model_dump()
         return response
 
     def add_response(self, response):
@@ -41,23 +26,6 @@ class Chatbot:
     def get_response_content(self):
         return self.context[-1]['content']
 
-    def clean_instruction(self):
-        for idx in reversed(range(len(self.context))):
-            if self.context[idx]['role'] == "user":
-                self.context[idx]['content'] = self.context[idx]['content'].split("instruction:\n")[0].strip()
-                break
-
-    def handle_token_limit(self, response):
-        try:
-            curr_usage_rate = response['usage']['total_tokens'] / self.max_token_size
-            exceeded_token_rate = curr_usage_rate - self.available_token_rate
-
-            if exceeded_token_rate > 0:
-                remove_size = math.ceil(len(self.context) / 10)
-                self.context = [self.context[0]] + self.context[remove_size+1:]
-
-        except Exception as e:
-            print(f"handle_token_limit exception: {e}")
 
 if __name__ == "__main__":
     # step-3: 테스트 시나리오에 따라 실행 코드 작성 및 예상 출력결과 작성

@@ -38,10 +38,11 @@ def chat_api():
 
     jjinchin.add_user_message(request_message)
     response = jjinchin.send_request()
+    print(response)
     jjinchin.add_response(response)
     response_message = jjinchin.get_response_content()
     jjinchin.handle_token_limit(response)
-    jjinchin.clean_instruction()
+    jjinchin.clear_instructions()
     print("response_message:", response_message)
 
     return {"response_message": response_message}
